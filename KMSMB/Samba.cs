@@ -77,7 +77,7 @@ namespace KMSMB
             }
             finally 
             {
-                if (key2 == null)
+                if (key2 != null)
                 {
                     key2.Close();
                 }
