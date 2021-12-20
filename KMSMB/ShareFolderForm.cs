@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Management;
+using System.Security.AccessControl;
 using System.Security.Principal;
 using System.Windows.Forms;
 
@@ -44,6 +45,7 @@ namespace KMSMB
                     return;
                 string accountToAccess = user;
                 string shareName = Path.GetFileName(path);
+                DirectorySecurity dirSecurity = Directory.GetAccessControl(path);
                 Globals.SharedFolder = shareName;
                 ManagementClass managementClass = new ManagementClass("Win32_Share");
                 ManagementBaseObject inParams = managementClass.GetMethodParameters("Create");
@@ -70,8 +72,13 @@ namespace KMSMB
                 securityDescriptor["ControlFlags"] = 4;
                 securityDescriptor["DACL"] = new object[] { dacl };
                 inParams["Access"] = securityDescriptor;
+                dirSecurity.AddAccessRule(new FileSystemAccessRule(sid, FileSystemRights.Modify | FileSystemRights.Synchronize, InheritanceFlags.ContainerInherit | InheritanceFlags.ObjectInherit, PropagationFlags.None, AccessControlType.Allow));
+                Directory.SetAccessControl(path, dirSecurity);
                 outParams = managementClass.InvokeMethod("Create", inParams, null);
-                var result = (uint)(outParams.Properties["ReturnValue"].Value);
+
+                //N/A
+                //var result = (uint)(outParams.Properties["ReturnValue"].Value);
+
                 MessageBox.Show("Priečinok " + path + " bol úspešne vyzdielaný");
             }
             catch (ArgumentNullException)
